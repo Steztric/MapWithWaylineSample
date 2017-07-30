@@ -23,7 +23,6 @@ namespace MapWithWaylineSample.iOS
         MKMapView nativeMap;
 
         // Wayline
-        MKPolylineRenderer polylineRenderer;
         IMKOverlay currentWayline;
 
         // Pins
@@ -56,29 +55,25 @@ namespace MapWithWaylineSample.iOS
             }
         }
 
-        private void DrawPolyline(IEnumerable<Position> elements)
+        private void DrawPolyline(Position[] elements)
         {
             var coords = elements.Select(position => new CLLocationCoordinate2D(position.Latitude, position.Longitude));
-
-            IMKOverlay oldWayline = currentWayline;
-
-            if (oldWayline != null)
+            
+            if (currentWayline != null)
             {
-                nativeMap.RemoveOverlay(oldWayline);
+                nativeMap.RemoveOverlay(currentWayline);
             }
 
             var wayline = MKPolyline.FromCoordinates(coords.ToArray());
-
-            IMKOverlay overlay = Runtime.GetNSObject(wayline.Handle) as IMKOverlay;
-
-            nativeMap.AddOverlay(overlay);
-            currentWayline = overlay;
+            nativeMap.AddOverlay(wayline);
+            currentWayline = wayline;
         }
 
         private void CustomPins_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             // Redraw the polyline and remove the old one
-            DrawPolyline(map.CustomPins.Select(p => p.Pin.Position));
+            var newLine = map.CustomPins.Select(p => p.Pin.Position).ToArray();
+            DrawPolyline(newLine);
         }
 
         MKOverlayRenderer GetOverlayRenderer(MKMapView mapView, IMKOverlay overlayWrapper)
@@ -87,14 +82,11 @@ namespace MapWithWaylineSample.iOS
 
             if (overlay is MKPolyline)
             {
-                if (polylineRenderer == null)
-                {
-                    polylineRenderer = new MKPolylineRenderer(overlay as MKPolyline);
-                    polylineRenderer.FillColor = UIColor.Blue;
-                    polylineRenderer.StrokeColor = UIColor.Red;
-                    polylineRenderer.LineWidth = 3;
-                    polylineRenderer.Alpha = 0.4f;
-                }
+                var polylineRenderer = new MKPolylineRenderer(overlay as MKPolyline);
+                polylineRenderer.FillColor = UIColor.Blue;
+                polylineRenderer.StrokeColor = UIColor.Red;
+                polylineRenderer.LineWidth = 3;
+                polylineRenderer.Alpha = 0.4f;
                 return polylineRenderer;
             }
             else
