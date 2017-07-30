@@ -41,8 +41,6 @@ namespace MapWithWaylineSample.iOS
 
                 nativeMap.OverlayRenderer = null;
                 nativeMap.GetViewForAnnotation = null;
-                nativeMap.DidSelectAnnotationView -= OnDidSelectAnnotationView;
-                nativeMap.DidDeselectAnnotationView -= OnDidDeselectAnnotationView;
                 nativeMap = null;
             }
 
@@ -55,8 +53,6 @@ namespace MapWithWaylineSample.iOS
                 nativeMap = Control as MKMapView;
                 nativeMap.OverlayRenderer = GetOverlayRenderer;
                 nativeMap.GetViewForAnnotation = GetViewForAnnotation;
-                nativeMap.DidSelectAnnotationView += OnDidSelectAnnotationView;
-                nativeMap.DidDeselectAnnotationView += OnDidDeselectAnnotationView;
             }
         }
 
@@ -81,11 +77,8 @@ namespace MapWithWaylineSample.iOS
 
         private void CustomPins_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            var nativeMap = Control as MKMapView;
-
             // Redraw the polyline and remove the old one
-            var pins = sender as IEnumerable<CustomPin>;
-            DrawPolyline(pins.Select(p => p.Pin.Position));
+            DrawPolyline(map.CustomPins.Select(p => p.Pin.Position));
         }
 
         MKOverlayRenderer GetOverlayRenderer(MKMapView mapView, IMKOverlay overlayWrapper)
@@ -140,29 +133,6 @@ namespace MapWithWaylineSample.iOS
 
             return annotationView;
         }
-
-        void OnDidSelectAnnotationView(object sender, MKAnnotationViewEventArgs e)
-        {
-            var customView = e.View as CustomMKAnnotationView;
-            map.SelectedPin = map.CustomPins.FirstOrDefault(cp => cp.Id == customView.Id);
-
-            customPinView = new UIView();
-            customPinView.Frame = new CGRect(0, 0, 200, 84);
-            customPinView.Center = new CGPoint(0, -(e.View.Frame.Height + 75));
-            e.View.AddSubview(customPinView);
-        }
-
-        void OnDidDeselectAnnotationView(object sender, MKAnnotationViewEventArgs e)
-        {
-            if (!e.View.Selected)
-            {
-                map.SelectedPin = null;
-                customPinView.RemoveFromSuperview();
-                customPinView.Dispose();
-                customPinView = null;
-            }
-        }
-
         CustomPin GetCustomPin(MKPointAnnotation annotation)
         {
             var position = new Position(annotation.Coordinate.Latitude, annotation.Coordinate.Longitude);
