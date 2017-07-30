@@ -83,24 +83,6 @@ namespace MapWithWaylineSample.iOS
         {
             var nativeMap = Control as MKMapView;
 
-            // Draw circles for the new pins
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (CustomPin cp in e.NewItems)
-                {
-                    IMKOverlay circleOverlay = MKCircle.Circle(new CLLocationCoordinate2D(cp.Pin.Position.Latitude, cp.Pin.Position.Longitude), 4.0);
-                    try
-                    {
-                        nativeMap.AddOverlay(Runtime.GetNSObject(circleOverlay.Handle) as IMKOverlay);
-
-                    }
-                    catch (Exception)
-                    {
-                        nativeMap.AddOverlay(circleOverlay);
-                    }
-                }
-            }
-
             // Redraw the polyline and remove the old one
             var pins = sender as IEnumerable<CustomPin>;
             DrawPolyline(pins.Select(p => p.Pin.Position));

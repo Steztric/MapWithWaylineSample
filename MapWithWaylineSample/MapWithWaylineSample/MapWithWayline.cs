@@ -28,37 +28,13 @@ namespace MapWithWaylineSample
             }
         }
 
-
-        public MapWithWayline() : base()
-        {
-            CustomPins.CollectionChanged += CustomPins_CollectionChanged;
-        }
-
         public void AddPin(Position position)
         {
             var label = $"{position.Latitude}, {position.Longitude}";
             var pin = new Pin { Position = position, Type = PinType.Generic, Label = label };
+            Pins.Add(pin);
             var customPin = new CustomPin { Id = label, Pin = pin, Depth = 0, XIndex = 0 };
             CustomPins.Add(customPin);
-        }
-
-        private void CustomPins_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.OldItems != null)
-            {
-                foreach (CustomPin cp in e.OldItems)
-                {
-                    Pins.Remove(cp.Pin);
-                }
-            }
-
-            if (e.NewItems != null)
-            {
-                foreach (CustomPin cp in e.NewItems)
-                {
-                    Pins.Add(cp.Pin);
-                }
-            }
         }
     }
 }
